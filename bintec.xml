@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <zabbix_export>
     <version>5.2</version>
-    <date>2020-12-04T15:39:58Z</date>
+    <date>2020-12-05T12:41:49Z</date>
     <groups>
         <group>
             <name>Templates/Network devices</name>
@@ -42,6 +42,9 @@ Tested with RS353jv, be.IP plus and R1202</description>
                 </application>
                 <application>
                     <name>SIF</name>
+                </application>
+                <application>
+                    <name>System</name>
                 </application>
                 <application>
                     <name>VPN</name>
@@ -450,7 +453,7 @@ Tested with RS353jv, be.IP plus and R1202</description>
                 <discovery_rule>
                     <name>Network interfaces</name>
                     <type>SNMP_AGENT</type>
-                    <snmp_oid>discovery[{#IFDESCR},IF-MIB::ifDescr,{#IFTYPE},IF-MIB::ifType,{#IFPHYSADDRESS},IF-MIB::ifPhysAddress]</snmp_oid>
+                    <snmp_oid>discovery[{#IFDESCR},IF-MIB::ifDescr,{#IFTYPE},IF-MIB::ifType,{#IFPHYSADDRESS},IF-MIB::ifPhysAddress,{#IFID},IF-MIB::ifIndex]</snmp_oid>
                     <key>net.if.discovery</key>
                     <delay>1h</delay>
                     <filter>
@@ -516,6 +519,20 @@ Tested with RS353jv, be.IP plus and R1202</description>
                                 </step>
                             </preprocessing>
                         </item_prototype>
+                        <item_prototype>
+                            <name>IP Address {#IFDESCR}</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>IP-MIB::ipAdEntAddr[&quot;index&quot;,&quot;ipAdEntIfIndex&quot;,{#IFID}]</snmp_oid>
+                            <key>network.ip[{#IFDESCR}]</key>
+                            <delay>5m</delay>
+                            <trends>0</trends>
+                            <value_type>TEXT</value_type>
+                            <applications>
+                                <application>
+                                    <name>Network interfaces</name>
+                                </application>
+                            </applications>
+                        </item_prototype>
                     </item_prototypes>
                     <graph_prototypes>
                         <graph_prototype>
@@ -546,7 +563,7 @@ Tested with RS353jv, be.IP plus and R1202</description>
                     <type>SNMP_AGENT</type>
                     <snmp_oid>discovery[{#PPPOEDESCR},.1.3.6.1.4.1.272.4.24.1.1.15]</snmp_oid>
                     <key>pppoe.discovery</key>
-                    <delay>1h</delay>
+                    <delay>10m</delay>
                     <item_prototypes>
                         <item_prototype>
                             <name>PPPoE Age {#PPPOEDESCR}</name>
@@ -641,7 +658,112 @@ Tested with RS353jv, be.IP plus and R1202</description>
                         </item_prototype>
                     </item_prototypes>
                 </discovery_rule>
+                <discovery_rule>
+                    <name>Sensors discovery</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>discovery[{#SENSORDESCR},.1.3.6.1.4.1.272.4.17.7.1.1.1.3,{#SENSORTYPE},.1.3.6.1.4.1.272.4.17.7.1.1.1.4,{#SENSORNR},.1.3.6.1.4.1.272.4.17.7.1.1.1.2]</snmp_oid>
+                    <key>sensors.discovery</key>
+                    <item_prototypes>
+                        <item_prototype>
+                            <name>{#SENSORDESCR}-Sensor</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>.1.3.6.1.4.1.272.4.17.7.1.1.1.5.{#SNMPINDEX}</snmp_oid>
+                            <key>sensors[{#SENSORID}.{#SENSORDESCR}]</key>
+                            <applications>
+                                <application>
+                                    <name>System</name>
+                                </application>
+                            </applications>
+                        </item_prototype>
+                    </item_prototypes>
+                </discovery_rule>
             </discovery_rules>
+            <macros>
+                <macro>
+                    <macro>{$WANINTERFACE}</macro>
+                    <description>The Wan interface</description>
+                </macro>
+            </macros>
+            <dashboards>
+                <dashboard>
+                    <name>bintec Router Dashboard</name>
+                    <widgets>
+                        <widget>
+                            <type>GRAPH_PROTOTYPE</type>
+                            <y>6</y>
+                            <width>24</width>
+                            <height>20</height>
+                            <fields>
+                                <field>
+                                    <type>INTEGER</type>
+                                    <name>columns</name>
+                                    <value>3</value>
+                                </field>
+                                <field>
+                                    <type>INTEGER</type>
+                                    <name>rows</name>
+                                    <value>6</value>
+                                </field>
+                                <field>
+                                    <type>GRAPH_PROTOTYPE</type>
+                                    <name>graphid</name>
+                                    <value>
+                                        <name>Traffic on interface {#IFDESCR}</name>
+                                        <host>bintec Router</host>
+                                    </value>
+                                </field>
+                            </fields>
+                        </widget>
+                        <widget>
+                            <type>GRAPH_CLASSIC</type>
+                            <x>16</x>
+                            <width>8</width>
+                            <height>6</height>
+                            <fields>
+                                <field>
+                                    <type>GRAPH</type>
+                                    <name>graphid</name>
+                                    <value>
+                                        <name>SIF sessions</name>
+                                        <host>bintec Router</host>
+                                    </value>
+                                </field>
+                            </fields>
+                        </widget>
+                        <widget>
+                            <type>GRAPH_CLASSIC</type>
+                            <width>8</width>
+                            <height>6</height>
+                            <fields>
+                                <field>
+                                    <type>GRAPH</type>
+                                    <name>graphid</name>
+                                    <value>
+                                        <name>CPU utilization</name>
+                                        <host>bintec Router</host>
+                                    </value>
+                                </field>
+                            </fields>
+                        </widget>
+                        <widget>
+                            <type>GRAPH_CLASSIC</type>
+                            <x>8</x>
+                            <width>8</width>
+                            <height>6</height>
+                            <fields>
+                                <field>
+                                    <type>GRAPH</type>
+                                    <name>graphid</name>
+                                    <value>
+                                        <name>Memory usage</name>
+                                        <host>bintec Router</host>
+                                    </value>
+                                </field>
+                            </fields>
+                        </widget>
+                    </widgets>
+                </dashboard>
+            </dashboards>
         </template>
     </templates>
     <triggers>
