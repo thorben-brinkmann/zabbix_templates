@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <zabbix_export>
     <version>5.2</version>
-    <date>2020-12-05T12:41:49Z</date>
+    <date>2021-05-28T18:04:38Z</date>
     <groups>
         <group>
             <name>Templates/Network devices</name>
@@ -45,6 +45,9 @@ Tested with RS353jv, be.IP plus and R1202</description>
                 </application>
                 <application>
                     <name>System</name>
+                </application>
+                <application>
+                    <name>VoIP</name>
                 </application>
                 <application>
                     <name>VPN</name>
@@ -264,6 +267,41 @@ Tested with RS353jv, be.IP plus and R1202</description>
                     <description>Discover xDSL Interfaces on bintec Router</description>
                     <item_prototypes>
                         <item_prototype>
+                            <name>xDSL Downstream Attenuation</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>.1.3.6.1.4.1.272.4.30.1.1.2.1.8.{#IFID}.0</snmp_oid>
+                            <key>xdsl.downstream.attenuation[{#IFID}]</key>
+                            <delay>1h</delay>
+                            <units>dB</units>
+                            <applications>
+                                <application>
+                                    <name>xDSL</name>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>MULTIPLIER</type>
+                                    <parameters>
+                                        <parameter>0.1</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>xDSL Downstream Max. attainable rate</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>.1.3.6.1.4.1.272.4.30.1.1.2.1.6.{#IFID}.0</snmp_oid>
+                            <key>xdsl.downstream.max[{#IFID}]</key>
+                            <delay>1h</delay>
+                            <units>bps</units>
+                            <description>xDSL Max attainable downstream rate</description>
+                            <applications>
+                                <application>
+                                    <name>xDSL</name>
+                                </application>
+                            </applications>
+                        </item_prototype>
+                        <item_prototype>
                             <name>xDSL Downstream</name>
                             <type>SNMP_AGENT</type>
                             <snmp_oid>.1.3.6.1.4.1.272.4.16.10.1.24.{#SNMPINDEX}</snmp_oid>
@@ -361,6 +399,41 @@ Tested with RS353jv, be.IP plus and R1202</description>
                             </preprocessing>
                         </item_prototype>
                         <item_prototype>
+                            <name>xDSL Upstream Attenuation</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>.1.3.6.1.4.1.272.4.30.1.1.3.1.6.{#IFID}.0</snmp_oid>
+                            <key>xdsl.upstream.attenuation[{#IFID}]</key>
+                            <delay>1h</delay>
+                            <units>dB</units>
+                            <applications>
+                                <application>
+                                    <name>xDSL</name>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>MULTIPLIER</type>
+                                    <parameters>
+                                        <parameter>0.1</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>xDSL Upstream Max. attainable rate</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>.1.3.6.1.4.1.272.4.30.1.1.3.1.9.{#IFID}.0</snmp_oid>
+                            <key>xdsl.upstream.max[{#IFID}]</key>
+                            <delay>1h</delay>
+                            <units>bps</units>
+                            <description>Max attainable upstream rate</description>
+                            <applications>
+                                <application>
+                                    <name>xDSL</name>
+                                </application>
+                            </applications>
+                        </item_prototype>
+                        <item_prototype>
                             <name>xDSL Upstream</name>
                             <type>SNMP_AGENT</type>
                             <snmp_oid>.1.3.6.1.4.1.272.4.16.10.1.25.{#SNMPINDEX}</snmp_oid>
@@ -449,6 +522,27 @@ Tested with RS353jv, be.IP plus and R1202</description>
                             <description>All licensed connections are in use!</description>
                         </trigger_prototype>
                     </trigger_prototypes>
+                    <graph_prototypes>
+                        <graph_prototype>
+                            <name>VPN License usage</name>
+                            <ymin_type_1>FIXED</ymin_type_1>
+                            <ymax_type_1>ITEM</ymax_type_1>
+                            <ymax_item_1>
+                                <host>bintec Router</host>
+                                <key>vpn.ipsec.maxconn[{#LICID}]</key>
+                            </ymax_item_1>
+                            <graph_items>
+                                <graph_item>
+                                    <sortorder>1</sortorder>
+                                    <color>0040FF</color>
+                                    <item>
+                                        <host>bintec Router</host>
+                                        <key>vpn.ipsec.currconn[{#LICID}]</key>
+                                    </item>
+                                </graph_item>
+                            </graph_items>
+                        </graph_prototype>
+                    </graph_prototypes>
                 </discovery_rule>
                 <discovery_rule>
                     <name>Network interfaces</name>
@@ -457,6 +551,7 @@ Tested with RS353jv, be.IP plus and R1202</description>
                     <key>net.if.discovery</key>
                     <delay>1h</delay>
                     <filter>
+                        <evaltype>AND</evaltype>
                         <conditions>
                             <condition>
                                 <macro>{#IFTYPE}</macro>
@@ -674,6 +769,175 @@ Tested with RS353jv, be.IP plus and R1202</description>
                                     <name>System</name>
                                 </application>
                             </applications>
+                        </item_prototype>
+                    </item_prototypes>
+                    <graph_prototypes>
+                        <graph_prototype>
+                            <name>{SENSORDESCR}</name>
+                            <graph_items>
+                                <graph_item>
+                                    <sortorder>1</sortorder>
+                                    <color>0080FF</color>
+                                    <item>
+                                        <host>bintec Router</host>
+                                        <key>sensors[{#SENSORID}.{#SENSORDESCR}]</key>
+                                    </item>
+                                </graph_item>
+                            </graph_items>
+                        </graph_prototype>
+                    </graph_prototypes>
+                </discovery_rule>
+                <discovery_rule>
+                    <name>VoIP Provider Discovery</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>discovery[{#IDX},.1.3.6.1.4.1.272.4.53.3.4.1.1,{#DESCR},.1.3.6.1.4.1.272.4.53.3.4.1.4]</snmp_oid>
+                    <key>voip.provider.discovery</key>
+                    <delay>1h</delay>
+                    <item_prototypes>
+                        <item_prototype>
+                            <name>Operational Status VoIP Trunk Line {#DESCR}</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>.1.3.6.1.4.1.272.4.53.3.4.1.15.{#IDX}</snmp_oid>
+                            <key>voip.provider.operstat[{#DESCR}]</key>
+                            <trends>0</trends>
+                            <value_type>TEXT</value_type>
+                            <applications>
+                                <application>
+                                    <name>VoIP</name>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>STR_REPLACE</type>
+                                    <parameters>
+                                        <parameter>1</parameter>
+                                        <parameter>not registered</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>STR_REPLACE</type>
+                                    <parameters>
+                                        <parameter>2</parameter>
+                                        <parameter>registering</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>STR_REPLACE</type>
+                                    <parameters>
+                                        <parameter>3</parameter>
+                                        <parameter>registered</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>STR_REPLACE</type>
+                                    <parameters>
+                                        <parameter>4</parameter>
+                                        <parameter>reregistering</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
+                        </item_prototype>
+                    </item_prototypes>
+                </discovery_rule>
+                <discovery_rule>
+                    <name>VPN peers discovery</name>
+                    <type>SNMP_AGENT</type>
+                    <snmp_oid>discovery[{#PEERID},.1.3.6.1.4.1.272.4.26.5.1.1,{#PEERDESCR},.1.3.6.1.4.1.272.4.26.5.1.3]</snmp_oid>
+                    <key>vpn.peers.discovery</key>
+                    <delay>1h</delay>
+                    <description>Discover IPSec Peers</description>
+                    <item_prototypes>
+                        <item_prototype>
+                            <name>Status of VPN connection {#PEERDESCR}</name>
+                            <type>SNMP_AGENT</type>
+                            <snmp_oid>.1.3.6.1.4.1.272.4.26.28.1.20.{#PEERID}</snmp_oid>
+                            <key>vpn.peers.status[{#PEERDESCR}]</key>
+                            <trends>0</trends>
+                            <value_type>TEXT</value_type>
+                            <applications>
+                                <application>
+                                    <name>VPN</name>
+                                </application>
+                            </applications>
+                            <preprocessing>
+                                <step>
+                                    <type>STR_REPLACE</type>
+                                    <parameters>
+                                        <parameter>1</parameter>
+                                        <parameter>up</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>STR_REPLACE</type>
+                                    <parameters>
+                                        <parameter>2</parameter>
+                                        <parameter>down</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>STR_REPLACE</type>
+                                    <parameters>
+                                        <parameter>5</parameter>
+                                        <parameter>dormant</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>STR_REPLACE</type>
+                                    <parameters>
+                                        <parameter>6</parameter>
+                                        <parameter>blocked</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>STR_REPLACE</type>
+                                    <parameters>
+                                        <parameter>33</parameter>
+                                        <parameter>awaiting callback</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>STR_REPLACE</type>
+                                    <parameters>
+                                        <parameter>35</parameter>
+                                        <parameter>ip lookup</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>STR_REPLACE</type>
+                                    <parameters>
+                                        <parameter>36</parameter>
+                                        <parameter>going up</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>STR_REPLACE</type>
+                                    <parameters>
+                                        <parameter>37</parameter>
+                                        <parameter>wait-if</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>STR_REPLACE</type>
+                                    <parameters>
+                                        <parameter>38</parameter>
+                                        <parameter>wait-publish</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>STR_REPLACE</type>
+                                    <parameters>
+                                        <parameter>39</parameter>
+                                        <parameter>wait-localip</parameter>
+                                    </parameters>
+                                </step>
+                                <step>
+                                    <type>STR_REPLACE</type>
+                                    <parameters>
+                                        <parameter>40</parameter>
+                                        <parameter>going-up-trans</parameter>
+                                    </parameters>
+                                </step>
+                            </preprocessing>
                         </item_prototype>
                     </item_prototypes>
                 </discovery_rule>
